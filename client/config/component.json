@@ -1,0 +1,6 @@
+{
+  "name": "config",
+  "description": "configuration variables for pulsar",
+  "main": "config.js",
+  "scripts": ["config.js"]
+}

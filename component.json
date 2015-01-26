@@ -1,0 +1,11 @@
+{
+  "name": "pulsar",
+  "description": "examine transfer time distributions in your transit system",
+  "locals": ["map"],
+  "paths": ["client"],
+  "dependencies": {
+    "components/bootstrap": "3.2.0",
+    "components/bootstrap-default": "3.2.0",
+    "visionmedia/debug": "2.1.1"
+  }
+}

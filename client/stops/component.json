@@ -1,0 +1,12 @@
+{
+  "name": "stops",
+  "description": "backbone collection of stops",
+  "dependencies": {
+    "jashkenas/backbone": "*",
+    "jashkenas/underscore": "*",
+    "components/jquery": "1.10"
+  },
+  "locals": ["stop", "config"],
+  "main": "stops.js",
+  "scripts": ["stops.js"]
+}

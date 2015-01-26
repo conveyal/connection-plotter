@@ -1,0 +1,11 @@
+{
+  "name": "stop",
+  "description": "backbone model representing a stop",
+  "dependencies": {
+    "jashkenas/backbone": "*",
+    "jashkenas/underscore": "*"
+  },
+  "locals": ["config"],
+  "main":"stop.js",
+  "scripts": ["stop.js"]
+}

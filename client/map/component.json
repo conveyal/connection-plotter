@@ -1,0 +1,11 @@
+{
+  "name": "map",
+  "description": "The map view for Pulsar",
+  "dependencies": {
+    "visionmedia/debug": "2.1.1",
+    "jashkenas/backbone": "*"
+  },
+  "locals": ["stops", "config"],
+  "scripts": ["map.js"],
+  "main": "map.js"
+}
