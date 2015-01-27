@@ -241,7 +241,8 @@ module.exports = Backbone.View.extend({
         // but there may be reasonable transfers later on, so continue the loop
         return true;
 
-      data.push({timeOfDay: arrival, transferTime: xfer});
+      // express arrival in hours, transfer time in minutes
+      data.push({timeOfDay: arrival / 3600, transferTime: xfer / 60});
       // accumulate an average
       avg += xfer;
 
@@ -255,17 +256,17 @@ module.exports = Backbone.View.extend({
     data = crossfilter(data);
 
     // draw the plots
+    // first, the transfer time histogram
     var xferTime = data.dimension(function (d) {return d.transferTime});
-
 
     var binSize = 1; // minutes
     var binnedTime = xferTime.group(function (xferTime) {
-      // convert to seconds, bin to two minutes, and convert back to minutes
-      return Math.floor(xferTime / (60 * binSize)) * binSize;
+      // bin to two minutes
+      return Math.floor(xferTime / binSize) * binSize;
     })
     .reduceCount();
 
-    var xferTimeHist = dc.barChart('#xfer-histogram')
+    var xferTimeHist = dc.barChart('#xfer-histogram', 'transfer')
       .width(800)
       .height(400)
       .margins({top: 10, right: 20, bottom: 20, left: 40})
@@ -273,7 +274,28 @@ module.exports = Backbone.View.extend({
       .group(binnedTime, 'transfers')
       .x(d3.scale.linear().domain([0, Math.floor(max / 60)]))
       .xUnits(function() { return max / (binSize * 60); })
+      .elasticY(true);
 
-      dc.renderAll();
+
+    // now the time of day histogram
+    var timeOfDay = data.dimension(function (d) { return d.timeOfDay });
+    var todBinSize = 0.5; // hours
+
+    window.binnedTod = timeOfDay.group(function (time) {
+      return Math.floor(time / todBinSize) * todBinSize;
+    })
+    .reduceCount();
+
+    window.todHist = dc.barChart('#time-of-day-histogram', 'transfer')
+      .width(800)
+      .height(400)
+      .margins({top: 10, right: 20, bottom: 20, left: 40})
+      .dimension(timeOfDay)
+      .x(d3.scale.linear().domain([0, 24]))
+      .xUnits(function () { return 24 / todBinSize; })
+      .group(binnedTod, "time of day")
+      .elasticY(true);
+
+      dc.renderAll('transfer');
   }
 });
