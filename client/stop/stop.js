@@ -17,20 +17,30 @@ module.exports = Backbone.Model.extend({
     vehicleType: null,
     vehicleTypeSet: null
   },
-  urlRoot: config.otpServer + '/routers/' + config.routerId + '/index/stops',
+
+  initialize: function(opts) {
+    this.urlRoot = config.otpServer + '/routers/' + opts.routerId + '/index/stops';
+  },
 
   /**
    * Get the patterns for this stop, and return a promise for when they will be done.
    */
-  getPatterns: function () {
+  getPatterns: function() {
     var instance = this;
-    var ret = new Promise();
+    return Promise.resolve(
+      $.get(this.urlRoot + '/' + this.get('id') + '/patterns').done(function(data) {
+        instance.set('patterns', data);
+      })
+    );
+  },
 
-    $.get(this.urlRoot + '/' + this.get('id') + '/patterns').done(function (data) {
-      instance.set('patterns', data);
-      ret.resolve(data);
-    });
-
-    return ret;
+  /** get the transfers for this stop */
+  getTransfers: function() {
+    var instance = this;
+    return Promise.resolve(
+      $.get(instance.urlRoot + '/' + instance.get('id') + '/transfers').done(function(data) {
+        instance.set('transfers', data);
+      })
+    );
   }
 });

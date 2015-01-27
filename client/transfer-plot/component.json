@@ -1,0 +1,13 @@
+{
+  "name": "transfer-plot",
+  "description": "plot of transfer times",
+  "dependencies": {
+    "jashkenas/backbone": "*",
+    "jashkenas/underscore": "*",
+    "visionmedia/debug": "2.1.1"
+  },
+  "locals": ["stop"],
+  "scripts": ["transfer-plot.js"],
+  "main": "transfer-plot.js",
+  "templates": ["transfer-plot.html"]
+}

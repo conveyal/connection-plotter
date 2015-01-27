@@ -4,7 +4,7 @@
   "dependencies": {
     "jashkenas/backbone": "*"
   },
-  "locals": ["map"],
+  "locals": ["map", "transfer-plot", "stop"],
   "main":"router.js",
   "scripts": ["router.js"]
 }

@@ -1,5 +1,7 @@
 var Backbone = require('backbone');
 var MapView = require('map');
+var TransferPlot = require('transfer-plot');
+var Stop = require('stop');
 
 module.exports = Backbone.Router.extend({
   initialize: function (options) {
@@ -27,6 +29,19 @@ module.exports = Backbone.Router.extend({
     m.render();
   },
 
+  stop: function (routerId, stopId) {
+    var instance = this;
+
+    var stop = new Stop({routerId: routerId, id: stopId});
+    stop.fetch().done(function () {
+      var p = new TransferPlot({model: stop});
+      var content = document.getElementById('content');
+      instance.empty(content);
+      content.appendChild(p.el);
+      p.render();
+    });
+  },
+
   /** remove all children of a dom node */
   empty: function (domNode) {
     // http://stackoverflow.com/questions/3955229
@@ -34,4 +49,4 @@ module.exports = Backbone.Router.extend({
       domNode.removeChild(domNode.firstChild);
     }
   }
-})
+});
