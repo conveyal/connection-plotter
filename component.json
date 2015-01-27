@@ -1,7 +1,7 @@
 {
   "name": "pulsar",
   "description": "examine transfer time distributions in your transit system",
-  "locals": ["map"],
+  "locals": ["router"],
   "paths": ["client"],
   "dependencies": {
     "components/bootstrap": "3.2.0",

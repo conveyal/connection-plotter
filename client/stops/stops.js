@@ -4,5 +4,7 @@ var config = require('config');
 
 module.exports = Backbone.Collection.extend({
   model: Stop,
-  url: config.otpServer + '/routers/' + config.routerId + '/index/stops'
+  initialize: function (opts) {
+    this.url = config.otpServer + '/routers/' + opts.routerId + '/index/stops';
+  }
 });

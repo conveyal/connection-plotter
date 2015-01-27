@@ -8,10 +8,14 @@ var Stops = require('stops');
 * Backbone view representing the map of stops.
 */
 module.exports = Backbone.View.extend({
+  initialize: function (opts) {
+    this.routerId = opts.routerId;
+  },
+
   render: function () {
     var instance = this;
 
-    this.stops = new Stops();
+    this.stops = new Stops({routerId: this.routerId});
 
     this.$el.css('width', config.mapWidth).css('height', config.mapHeight).attr('id', 'map');
 
@@ -29,7 +33,7 @@ module.exports = Backbone.View.extend({
       }).addTo(this.map);
 
     // zoom to graph extent, more or less
-    $.get(config.otpServer + '/routers/' + config.routerId).then(function (data) {
+    $.get(config.otpServer + '/routers/' + this.routerId).then(function (data) {
       debug('got graph summary for router' + data.routerId);
 
       var c = [];
@@ -58,7 +62,7 @@ module.exports = Backbone.View.extend({
 
           // clear out old stops
           if (instance.stopLayer)
-            instance.map.removeLayer(stopLayer);
+            instance.map.removeLayer(instance.stopLayer);
 
           instance.stopLayer = L.featureGroup();
 

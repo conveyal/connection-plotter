@@ -26,12 +26,10 @@
   window.debug = require('debug');
   require('bootstrap');
 
-  var MapView = require('map');
+  var Router = require('router');
 
   $(document).ready(function () {
-    var m = new MapView();
-    document.getElementById('content').appendChild(m.el);
-    m.render();
+    var r = new Router();
   });
   </script>
 </head>
