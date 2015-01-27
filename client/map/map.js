@@ -71,6 +71,9 @@ module.exports = Backbone.View.extend({
               { radius: 5 }
             );
             stopMarker.bindLabel(stop.get("name"));
+            stopMarker.on('click', function () {
+              window.location = '#' + instance.routerId + '/stop/' + stop.id;
+            });
             instance.stopLayer.addLayer(stopMarker);
           });
 

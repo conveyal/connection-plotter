@@ -2,7 +2,8 @@
   "name": "router",
   "description": "backbone router for pulsar",
   "dependencies": {
-    "jashkenas/backbone": "*"
+    "jashkenas/backbone": "*",
+    "components/jquery": "1.10"
   },
   "locals": ["map", "transfer-plot", "stop"],
   "main":"router.js",

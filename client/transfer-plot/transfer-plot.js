@@ -258,7 +258,7 @@ module.exports = Backbone.View.extend({
     var xferTime = data.dimension(function (d) {return d.transferTime});
 
 
-    var binSize = 2; // minutes
+    var binSize = 1; // minutes
     var binnedTime = xferTime.group(function (xferTime) {
       // convert to seconds, bin to two minutes, and convert back to minutes
       return Math.floor(xferTime / (60 * binSize)) * binSize;

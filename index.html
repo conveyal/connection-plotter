@@ -18,6 +18,10 @@
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
   <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
 
+  <style type="text/css">
+    html, body { height: 100%; width: 100% }
+  </style>
+
   <!-- TODO: componentize -->
   <script src="lib/turf.min.js"></script>
   <link rel="stylesheet" href="lib/leaflet.label.css" />
@@ -31,14 +35,15 @@
 
   <script src="build/build.js"></script>
   <script type="text/javascript">
-  jQuery = $ = require('backbone').$ = require('jquery');
   window.debug = require('debug');
+  var $ = require('jquery');
+  var jQuery = $;
+  require('backbone').$ = $;
   require('bootstrap');
-
   var Router = require('router');
 
   $(document).ready(function () {
-    var r = new Router();
+    new Router();
   });
   </script>
 </head>
@@ -50,10 +55,12 @@
       </div>
     </div>
   </div>
+  <div id="map"></div>
   <div class="container">
     <div class="row">
       <div class="col-md-12" id="content">
       </div>
+      <a href="#">test</a>
     </div>
   </div>
 </body>

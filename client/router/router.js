@@ -2,10 +2,11 @@ var Backbone = require('backbone');
 var MapView = require('map');
 var TransferPlot = require('transfer-plot');
 var Stop = require('stop');
+var $ = require('jquery');
 
 module.exports = Backbone.Router.extend({
-  initialize: function (options) {
-      Backbone.history.start();
+  initialize: function () {
+    Backbone.history.start();
   },
 
   routes: {
@@ -22,10 +23,11 @@ module.exports = Backbone.Router.extend({
 
   map: function (routerId) {
     var m = new MapView({routerId: routerId});
-    // put the element in the DOM before rendering, so that leaflet is happy
-    var content = document.getElementById('content');
-    this.empty(content);
-    content.appendChild(m.el);
+    // bind directly to top-level div
+    this.empty();
+    var map = document.getElementById('map');
+    m.el = map;
+    m.$el = $(map);
     m.render();
   },
 
@@ -36,17 +38,27 @@ module.exports = Backbone.Router.extend({
     stop.fetch().done(function () {
       var p = new TransferPlot({model: stop});
       var content = document.getElementById('content');
-      instance.empty(content);
+      instance.empty();
       content.appendChild(p.el);
       p.render();
     });
   },
 
   /** remove all children of a dom node */
-  empty: function (domNode) {
+  empty: function () {
     // http://stackoverflow.com/questions/3955229
+
+    var domNode = document.getElementById('content');
     while (domNode.firstChild) {
       domNode.removeChild(domNode.firstChild);
     }
+
+    // make an entirely new map div to clear leaflet state
+    var oldMap = document.getElementById('map');
+    oldMap.setAttribute('id', '');
+    var newMap = document.createElement('div');
+    newMap.setAttribute('id', 'map');
+    oldMap.parentNode.insertBefore(newMap, oldMap);
+    oldMap.parentNode.removeChild(oldMap);    
   }
 });

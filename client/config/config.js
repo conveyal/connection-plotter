@@ -1,8 +1,8 @@
 module.exports = {
   /** The url of the OTP REST API */
   otpServer: 'http://localhost:8080/otp',
-  mapWidth: "1280px",
-  mapHeight: "960px",
+  mapWidth: "100%",
+  mapHeight: "100%",
 
   /** walking speed, meters/second */
   walkingSpeed: 1.333,
