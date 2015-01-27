@@ -1,0 +1,10 @@
+{
+  "name": "router",
+  "description": "backbone router for pulsar",
+  "dependencies": {
+    "jashkenas/backbone": "*"
+  },
+  "locals": ["map"],
+  "main":"router.js",
+  "scripts": ["router.js"]
+}
