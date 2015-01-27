@@ -68,8 +68,9 @@ module.exports = Backbone.View.extend({
 
           instance.stops.each(function (stop) {
             var stopMarker = new L.CircleMarker(new L.LatLng(stop.get('lat'), stop.get('lon')),
-            { radius: 3 }
-          )
+              { radius: 5 }
+            );
+            stopMarker.bindLabel(stop.get("name"));
             instance.stopLayer.addLayer(stopMarker);
           });
 
