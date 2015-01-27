@@ -4,9 +4,10 @@
   "dependencies": {
     "jashkenas/backbone": "*",
     "jashkenas/underscore": "*",
-    "visionmedia/debug": "2.1.1"
+    "visionmedia/debug": "2.1.1",
+    "components/jquery": "1.10"
   },
-  "locals": ["stop"],
+  "locals": ["stop", "stops", "config"],
   "scripts": ["transfer-plot.js"],
   "main": "transfer-plot.js",
   "templates": ["transfer-plot.html"]

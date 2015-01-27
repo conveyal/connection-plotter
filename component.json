@@ -6,6 +6,7 @@
   "dependencies": {
     "components/bootstrap": "3.2.0",
     "components/bootstrap-default": "3.2.0",
-    "visionmedia/debug": "2.1.1"
+    "visionmedia/debug": "2.1.1",
+    "components/jquery": "1.10"
   }
 }
