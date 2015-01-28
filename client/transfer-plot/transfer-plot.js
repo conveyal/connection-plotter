@@ -150,7 +150,9 @@ module.exports = Backbone.View.extend({
           else
             nextStop = patt.stops[thisStop + 1].id;
 
-          var group = nextStop + '_' + patt.routeId;
+          // we include the closest stop to ensure we're only transferring to routes that share the same
+          // transfer stop and next stop.
+          var group = patt.stops[thisStop].id + '_' + nextStop + '_' + patt.routeId;
           if (!instance.patternGroups.has(group))
             instance.patternGroups.set(group, [patternId]);
           else
@@ -229,25 +231,36 @@ module.exports = Backbone.View.extend({
   changePattern: function(e) {
     var instance = this;
 
-    this.fromPattern = this.$('#fromPattern').val();
-    this.toPattern = this.$('#toPattern').val();
+    this.fromPatternGroup = this.$('#fromPattern').val();
+    this.toPatternGroup = this.$('#toPattern').val();
 
     // figure out the stop for the toPattern
-    this.toStop = this.patterns.get(this.toPattern)[0];
-    this.transferDistance = this.patterns.get(this.toPattern)[1];
+    var exemplarToPattern = this.patternGroups.get(this.toPatternGroup)[0];
+    this.toStop = this.patterns.get(exemplarToPattern)[0];
+    this.transferDistance = this.patterns.get(exemplarToPattern)[1];
     this.minTransferTime = this.transferDistance / config.walkingSpeed + config.minTransferTime;
 
-    debug('transferring from pattern ' + this.fromPattern + ' to pattern ' + this.toPattern +
+    debug('transferring from pattern group ' + this.fromPatternGroup + ' to pattern ' + this.toPatternGroup +
       ', walking ' + this.transferDistance + 'm in ' + this.minTransferTime + 's');
 
     // TODO: show stops on a miniature map
 
-    // get the trips on this pattern
+    // get the trips on these patterns
     // TODO: only get trips that are actually running on a single day
-    var from = this.getTripTimes(this.model.id, this.fromPattern, "from");
-    var to = this.getTripTimes(this.toStop, this.toPattern, "to");
+    var promises = [];
+    this.departures = [];
+    this.arrivals = [];
 
-    Promise.all([from, to]).then(function() {
+    // get the stop times for all of the patterns for both the from and to pattern groups
+    this.patternGroups.get(this.fromPatternGroup).forEach(function (patternId) {
+      promises.push(this.getTripTimes(this.model.id, patternId, "from"));
+    }, this);
+
+    this.patternGroups.get(this.toPatternGroup).forEach(function (patternId) {
+      promises.push(this.getTripTimes(this.toStop, patternId, "to"));
+    }, this);
+
+    Promise.all(promises).then(function() {
       debug('got ' + instance.arrivals.length + ' arrivals and ' + instance.departures.length + ' departures');
       instance.calculateWaitTimes();
     });
@@ -259,11 +272,8 @@ module.exports = Backbone.View.extend({
 
     debug('getting trips at stop ' + stop + ' on pattern ' + pattern);
 
-    if (which == "from")
-      this.arrivals = [];
-    else if (which == "to")
-      this.departures = [];
-    else return Promise.reject("which must be from or to");
+    if (which != 'from' && which != 'to')
+      return Promise.reject("which must be from or to");
 
     // first get the trip IDs
     return new Promise(function(resolve, reject) {
