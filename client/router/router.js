@@ -34,7 +34,7 @@ module.exports = Backbone.Router.extend({
   stop: function (routerId, stopId) {
     var instance = this;
 
-    var stop = new Stop({routerId: routerId, id: stopId});
+    var stop = new Stop({id: stopId}, {routerId: routerId});
     stop.fetch().done(function () {
       var p = new TransferPlot({model: stop});
       var content = document.getElementById('content');
@@ -59,6 +59,6 @@ module.exports = Backbone.Router.extend({
     var newMap = document.createElement('div');
     newMap.setAttribute('id', 'map');
     oldMap.parentNode.insertBefore(newMap, oldMap);
-    oldMap.parentNode.removeChild(oldMap);    
+    oldMap.parentNode.removeChild(oldMap);
   }
 });

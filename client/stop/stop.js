@@ -18,8 +18,13 @@ module.exports = Backbone.Model.extend({
     vehicleTypeSet: null
   },
 
-  initialize: function(opts) {
-    this.urlRoot = config.otpServer + '/routers/' + opts.routerId + '/index/stops';
+  initialize: function(attrs, opts) {
+    this.routerId = opts.routerId;
+    this.refreshUrlRoot();
+  },
+
+  refreshUrlRoot: function () {
+    this.urlRoot = config.otpServer + '/routers/' + this.routerId + '/index/stops';
   },
 
   /**
@@ -40,6 +45,16 @@ module.exports = Backbone.Model.extend({
     return Promise.resolve(
       $.get(instance.urlRoot + '/' + instance.get('id') + '/transfers').done(function(data) {
         instance.set('transfers', data);
+      })
+    );
+  },
+
+  /** get the routes for this stop */
+  getRoutes: function() {
+    var instance = this;
+    return Promise.resolve(
+      $.get(instance.urlRoot + '/' + instance.get('id') + '/routes').done(function(data) {
+        instance.set('routes', data);
       })
     );
   }

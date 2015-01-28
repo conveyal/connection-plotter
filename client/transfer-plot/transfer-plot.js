@@ -27,7 +27,11 @@ module.exports = Backbone.View.extend({
       instance.getTransferStops();
     });
 
-    this.el.innerHTML = this.template(this.model.toJSON());
+    this.el.innerHTML = this.template(_.extend({
+      routerId: this.model.routerId
+    }, this.model.toJSON()));
+
+    return this;
   },
 
   /** Called once transfers have loaded to get the transfer stops */
@@ -38,16 +42,17 @@ module.exports = Backbone.View.extend({
 
     // prepopulate potential transfer stops with this stop
     this.stops = new Stops([this.model], {
-      routerId: this.model.get('routerId')
+      routerId: this.model.routerId
     });
 
     debug('requesting ' + this.model.get('transfers').length + ' transfer stops');
 
     _.each(_.pluck(this.model.get('transfers'), 'toStopId'), function(stopId) {
-      debug('requesting stop ' + stopId + ' on router ' + instance.model.get('routerId'));
+      debug('requesting stop ' + stopId + ' on router ' + instance.model.routerId);
       var stop = new Stop({
-        routerId: instance.model.get('routerId'),
         id: stopId
+      }, {
+        routerId: instance.model.routerId,
       });
       promises.push(stop.fetch().done(function() {
         instance.stops.add(stop);
@@ -111,7 +116,7 @@ module.exports = Backbone.View.extend({
   },
 
   /** group the patterns by next stop */
-  groupPatterns: function () {
+  groupPatterns: function() {
     debug('grouping ' + this.patterns.size + ' patterns');
 
     var instance = this;
@@ -132,12 +137,13 @@ module.exports = Backbone.View.extend({
     this.patterns.forEach(function(val, patternId) {
       // get the pattern stops
       promises.push(Promise.resolve(
-        $.get(config.otpServer + '/routers/' + instance.model.get('routerId') + '/index/patterns/' + patternId)
-        .done(function (patt) {
+        $.get(config.otpServer + '/routers/' + instance.model.routerId + '/index/patterns/' +
+          patternId)
+        .done(function(patt) {
           // find the next stop
           var thisStop = 0;
 
-          var thisStopId = instance.patterns.get(patt.id)[0]  ;
+          var thisStopId = instance.patterns.get(patt.id)[0];
 
           // TODO: loop routes?
           while (patt.stops[thisStop].id != thisStopId)
@@ -161,12 +167,15 @@ module.exports = Backbone.View.extend({
           instance.patternMembership.set(patternId, group);
 
           // save naming information
-          instance.patternLastStops.set(patternId, {route: patt.routeId, stop: patt.stops[patt.stops.length - 1].name});
+          instance.patternLastStops.set(patternId, {
+            route: patt.routeId,
+            stop: patt.stops[patt.stops.length - 1].name
+          });
         })
       ));
     });
 
-    Promise.all(promises).then(function () {
+    Promise.all(promises).then(function() {
       debug('grouped ' + instance.patterns.size + ' patterns into ' + instance.patternGroups.size + ' groups');
       instance.inferPatternGroupNames();
       instance.populatePatternSelector();
@@ -174,17 +183,17 @@ module.exports = Backbone.View.extend({
   },
 
   /** Create names for each group of patterns */
-  inferPatternGroupNames: function () {
+  inferPatternGroupNames: function() {
     debug('naming ' + this.patternGroups.size + ' patterns');
 
     // map from pattern group ID -> pattern group name
     this.patternGroupNames = new Map();
-    this.patternGroups.forEach(function (patternIds, group) {
+    this.patternGroups.forEach(function(patternIds, group) {
       var id = this.patternLastStops.get(patternIds[0]).route + ' to ';
 
       var lastStops = [];
 
-      patternIds.forEach(function (patternId) {
+      patternIds.forEach(function(patternId) {
         var stopName = this.patternLastStops.get(patternId).stop;
         if (lastStops.indexOf(stopName) == -1)
           lastStops.push(stopName);
@@ -252,11 +261,11 @@ module.exports = Backbone.View.extend({
     this.arrivals = [];
 
     // get the stop times for all of the patterns for both the from and to pattern groups
-    this.patternGroups.get(this.fromPatternGroup).forEach(function (patternId) {
+    this.patternGroups.get(this.fromPatternGroup).forEach(function(patternId) {
       promises.push(this.getTripTimes(this.model.id, patternId, "from"));
     }, this);
 
-    this.patternGroups.get(this.toPatternGroup).forEach(function (patternId) {
+    this.patternGroups.get(this.toPatternGroup).forEach(function(patternId) {
       promises.push(this.getTripTimes(this.toStop, patternId, "to"));
     }, this);
 
@@ -277,7 +286,8 @@ module.exports = Backbone.View.extend({
 
     // first get the trip IDs
     return new Promise(function(resolve, reject) {
-      $.get(config.otpServer + '/routers/' + instance.model.get('routerId') + '/index/patterns/' + pattern + '/trips')
+      $.get(config.otpServer + '/routers/' + instance.model.routerId + '/index/patterns/' + pattern +
+          '/trips')
         .done(function(data) {
           var tripIds = _.pluck(data, 'id');
 
@@ -287,7 +297,7 @@ module.exports = Backbone.View.extend({
 
           _.each(tripIds, function(tripId) {
             promises.push(Promise.resolve(
-              $.get(config.otpServer + '/routers/' + instance.model.get('routerId') +
+              $.get(config.otpServer + '/routers/' + instance.model.routerId +
                 '/index/trips/' + tripId + '/stoptimes')
               .done(function(stopTimes) {
                 // TODO: loop routes?
@@ -302,7 +312,7 @@ module.exports = Backbone.View.extend({
               })));
           });
 
-          Promise.all(promises).then(function () {
+          Promise.all(promises).then(function() {
             debug('got ' + promises.length + ' stop times');
             resolve(which == "from" ? instance.arrivals : instance.departures);
           });
@@ -311,7 +321,7 @@ module.exports = Backbone.View.extend({
   },
 
   /** calculate the wait times for all possible transfers */
-  calculateWaitTimes: function () {
+  calculateWaitTimes: function() {
     // sort the arrivals and departures so we can scan through them sequentially
     this.arrivals.sort();
     this.departures.sort();
@@ -323,7 +333,7 @@ module.exports = Backbone.View.extend({
     var avg = 0;
     var max = 0;
 
-    this.arrivals.every(function (arrival) {
+    this.arrivals.every(function(arrival) {
       while (this.departures[departureIdx] < arrival + this.minTransferTime) {
         departureIdx++;
         if (departureIdx >= this.departures.length) {
@@ -335,13 +345,16 @@ module.exports = Backbone.View.extend({
       var xfer = this.departures[departureIdx] - arrival;
 
       if (xfer > config.maxTransferTime)
-        // ce n'est un transfer
-        // nobody would ever make this transfer, effectively one of the routes is not running
-        // but there may be reasonable transfers later on, so continue the loop
+      // ce n'est un transfer
+      // nobody would ever make this transfer, effectively one of the routes is not running
+      // but there may be reasonable transfers later on, so continue the loop
         return true;
 
       // express arrival in hours, transfer time in minutes
-      data.push({timeOfDay: arrival / 3600, transferTime: xfer / 60});
+      data.push({
+        timeOfDay: arrival / 3600,
+        transferTime: xfer / 60
+      });
       // accumulate an average
       avg += xfer;
 
@@ -356,44 +369,62 @@ module.exports = Backbone.View.extend({
 
     // draw the plots
     // first, the transfer time histogram
-    var xferTime = data.dimension(function (d) {return d.transferTime});
+    var xferTime = data.dimension(function(d) {
+      return d.transferTime
+    });
 
     var binSize = 1; // minutes
-    var binnedTime = xferTime.group(function (xferTime) {
-      // bin to two minutes
-      return Math.floor(xferTime / binSize) * binSize;
-    })
-    .reduceCount();
+    var binnedTime = xferTime.group(function(xferTime) {
+        // bin to two minutes
+        return Math.floor(xferTime / binSize) * binSize;
+      })
+      .reduceCount();
 
     var xferTimeHist = dc.barChart('#xfer-histogram', 'transfer')
       .width(800)
       .height(400)
-      .margins({top: 10, right: 20, bottom: 20, left: 40})
+      .margins({
+        top: 10,
+        right: 20,
+        bottom: 20,
+        left: 40
+      })
       .dimension(xferTime)
       .group(binnedTime, 'transfers')
       .x(d3.scale.linear().domain([0, Math.floor(max / 60)]))
-      .xUnits(function() { return max / (binSize * 60); })
+      .xUnits(function() {
+        return max / (binSize * 60);
+      })
       .elasticY(true);
 
     // now the time of day histogram
-    var timeOfDay = data.dimension(function (d) { return d.timeOfDay });
+    var timeOfDay = data.dimension(function(d) {
+      return d.timeOfDay
+    });
     var todBinSize = 0.5; // hours
 
-    window.binnedTod = timeOfDay.group(function (time) {
-      return Math.floor(time / todBinSize) * todBinSize;
-    })
-    .reduceCount();
+    window.binnedTod = timeOfDay.group(function(time) {
+        return Math.floor(time / todBinSize) * todBinSize;
+      })
+      .reduceCount();
 
     window.todHist = dc.barChart('#time-of-day-histogram', 'transfer')
       .width(800)
       .height(400)
-      .margins({top: 10, right: 20, bottom: 20, left: 40})
+      .margins({
+        top: 10,
+        right: 20,
+        bottom: 20,
+        left: 40
+      })
       .dimension(timeOfDay)
       .x(d3.scale.linear().domain([0, 24]))
-      .xUnits(function () { return 24 / todBinSize; })
+      .xUnits(function() {
+        return 24 / todBinSize;
+      })
       .group(binnedTod, "time of day")
       .elasticY(true);
 
-      dc.renderAll('transfer');
+    dc.renderAll('transfer');
   }
 });
