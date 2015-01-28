@@ -1,0 +1,6 @@
+{
+  "name": "pattern-grouper",
+  "description": "group patterns by direction",
+  "scripts": ["pattern-grouper.js"],
+  "main": "pattern-grouper.js"
+}
