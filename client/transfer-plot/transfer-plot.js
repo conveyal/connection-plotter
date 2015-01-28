@@ -84,9 +84,6 @@ module.exports = Backbone.View.extend({
     // map from pattern ID -> [closest stop, distance]
     this.patterns = new Map();
 
-    // map from pattern ID -> pattern name
-    this.patternNames = new Map();
-
     this.stops.each(function(stop) {
       // get the relevant transfer
       var distance;
@@ -102,7 +99,6 @@ module.exports = Backbone.View.extend({
       _.each(stop.get('patterns'), function(pattern) {
         if (!instance.patterns.has(pattern.id) || distance < instance.patterns.get(pattern.id)[1]) {
           instance.patterns.set(pattern.id, [stop.id, distance]);
-          instance.patternNames.set(pattern.id, pattern.desc);
         }
       });
     });
@@ -111,21 +107,114 @@ module.exports = Backbone.View.extend({
 
     debug('found ' + this.patterns.size + ' reachable patterns');
 
-    this.populatePatternSelector();
+    this.groupPatterns();
+  },
+
+  /** group the patterns by next stop */
+  groupPatterns: function () {
+    debug('grouping ' + this.patterns.size + ' patterns');
+
+    var instance = this;
+    var promises = [];
+
+    // map from group ID to [pattern_id]
+    this.patternGroups = new Map();
+
+    // map from pattern ID to group ID
+    this.patternMembership = new Map();
+
+    // map from pattern ID to [route_name, last stop name]
+    this.patternLastStops = new Map();
+
+    // map from pattern to [trip_id]
+    this.patternTrips = new Map();
+
+    this.patterns.forEach(function(val, patternId) {
+      // get the pattern stops
+      promises.push(Promise.resolve(
+        $.get(config.otpServer + '/routers/' + instance.model.get('routerId') + '/index/patterns/' + patternId)
+        .done(function (patt) {
+          // find the next stop
+          var thisStop = 0;
+
+          var thisStopId = instance.patterns.get(patt.id)[0]  ;
+
+          // TODO: loop routes?
+          while (patt.stops[thisStop].id != thisStopId)
+            thisStop++;
+
+          var nextStop;
+          // there is no next stop, end of the line
+          if (thisStop == patt.stops.length - 1)
+            nextStop = null;
+          else
+            nextStop = patt.stops[thisStop + 1].id;
+
+          var group = nextStop + '_' + patt.routeId;
+          if (!instance.patternGroups.has(group))
+            instance.patternGroups.set(group, [patternId]);
+          else
+            instance.patternGroups.get(group).push(patternId);
+
+          instance.patternMembership.set(patternId, group);
+
+          // save naming information
+          instance.patternLastStops.set(patternId, {route: patt.routeId, stop: patt.stops[patt.stops.length - 1].name});
+        })
+      ));
+    });
+
+    Promise.all(promises).then(function () {
+      debug('grouped ' + instance.patterns.size + ' patterns into ' + instance.patternGroups.size + ' groups');
+      instance.inferPatternGroupNames();
+      instance.populatePatternSelector();
+    });
+  },
+
+  /** Create names for each group of patterns */
+  inferPatternGroupNames: function () {
+    debug('naming ' + this.patternGroups.size + ' patterns');
+
+    // map from pattern group ID -> pattern group name
+    this.patternGroupNames = new Map();
+    this.patternGroups.forEach(function (patternIds, group) {
+      var id = this.patternLastStops.get(patternIds[0]).route + ' to ';
+
+      var lastStops = [];
+
+      patternIds.forEach(function (patternId) {
+        var stopName = this.patternLastStops.get(patternId).stop;
+        if (lastStops.indexOf(stopName) == -1)
+          lastStops.push(stopName);
+      }, this);
+
+      id += lastStops.join(' / ');
+
+      this.patternGroupNames.set(group, id);
+    }, this);
   },
 
   /** Allow the user to choose the pattern they want to look at transfers to */
   populatePatternSelector: function() {
     // even though we didn't explicitly call getPatterns on this.model, it is included in this.stops
     // by reference to the same object in memory, so will have received patterns
+    var fromGroupsIncludedSoFar = new Set();
+    var instance = this;
+
     _.each(this.model.get('patterns'), function(patt) {
+      // add each pattern group only once
+      var groupId = instance.patternMembership.get(patt.id);
+      if (fromGroupsIncludedSoFar.has(groupId))
+        return;
+
       var opt = document.createElement('option');
-      opt.value = _.escape(patt.id);
-      opt.innerHTML = _.escape(patt.desc);
+      opt.value = _.escape(groupId);
+      opt.innerHTML = _.escape(instance.patternGroupNames.get(groupId));
+      fromGroupsIncludedSoFar.add(groupId);
       this.$('#fromPattern').append(opt);
     });
 
-    this.patternNames.forEach(function(desc, id) {
+    this.patternGroupNames.forEach(function(desc, id) {
       var opt = document.createElement('option');
       opt.value = _.escape(id);
       opt.innerHTML = _.escape(desc);
@@ -275,7 +364,6 @@ module.exports = Backbone.View.extend({
       .x(d3.scale.linear().domain([0, Math.floor(max / 60)]))
       .xUnits(function() { return max / (binSize * 60); })
       .elasticY(true);
-
 
     // now the time of day histogram
     var timeOfDay = data.dimension(function (d) { return d.timeOfDay });
