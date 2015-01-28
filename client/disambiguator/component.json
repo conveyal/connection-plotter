@@ -1,0 +1,13 @@
+{
+  "name": "disambiguator",
+  "description": "disambiguate a map click; list nearby stops",
+  "dependencies": {
+    "jashkenas/backbone": "*",
+    "jashkenas/underscore": "*",
+    "visionmedia/debug": "2.1.1"
+  },
+  "locals": ["stops", "router"],
+  "scripts": ["disambiguator.js"],
+  "main": "disambiguator.js",
+  "templates": ["disambiguator.html"]
+}

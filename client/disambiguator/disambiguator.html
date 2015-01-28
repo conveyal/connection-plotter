@@ -1,0 +1,9 @@
+<ul>
+  <% _.each(stops, function(stop) { %>
+    <li>
+      <a href="#<%= routerId %>/stop/<%= stop.id %>">
+        <%= stop.name %> (<%= _.map(stop.routes, function (route) { return route.shortName || route.longName; }).join(', ') %>)
+      </a>
+    </li>
+  <% }); %>
+</ul>
