@@ -2,6 +2,7 @@ var config = require('config');
 var debug = require('debug')('map');
 var Backbone = require('backbone');
 var $ = require('jquery');
+var _ = require('underscore');
 var Stops = require('stops');
 var Disambiguator = require('disambiguator');
 
@@ -15,6 +16,7 @@ var zoom;
 module.exports = Backbone.View.extend({
   initialize: function(opts) {
     this.routerId = opts.routerId;
+    _.bindAll(this, 'disambiguate');
   },
 
   render: function() {
@@ -72,22 +74,12 @@ module.exports = Backbone.View.extend({
           });
 
           instance.stopLayer.addTo(instance.map);
+          instance.stopLayer.on('click', instance.disambiguate);
         });
     });
 
     // set the click handler
-    this.map.on('click', function(evt) {
-      var d = new Disambiguator({
-        lat: evt.latlng.lat,
-        lon: evt.latlng.lng,
-        routerId: instance.routerId
-      }).render();
-
-      var popup = L.popup({minWidth: 300, minHeight: 400})
-        .setLatLng(evt.latlng)
-        .setContent(d.el)
-        .openOn(instance.map);
-    });
+    this.map.on('click', this.disambiguate);
 
     // zoom to graph extent, more or less
     if (center === null) {
@@ -110,5 +102,18 @@ module.exports = Backbone.View.extend({
       // use persisted center and zoom
       this.map.setView(center, zoom);
     }
+  },
+
+  disambiguate: function (evt) {
+      var d = new Disambiguator({
+        lat: evt.latlng.lat,
+        lon: evt.latlng.lng,
+        routerId: this.routerId
+      }).render();
+
+      var popup = L.popup({minWidth: 300, minHeight: 400})
+      .setLatLng(evt.latlng)
+      .setContent(d.el)
+      .openOn(this.map);
   }
 });
