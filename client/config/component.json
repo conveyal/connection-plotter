@@ -1,6 +1,6 @@
 {
   "name": "config",
-  "description": "configuration variables for pulsar",
+  "description": "configuration variables for connection-plotter",
   "main": "config.js",
   "scripts": ["config.js"]
 }

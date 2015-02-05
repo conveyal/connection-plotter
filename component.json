@@ -1,5 +1,5 @@
 {
-  "name": "pulsar",
+  "name": "connection-plotter",
   "description": "examine transfer time distributions in your transit system",
   "locals": ["router"],
   "paths": ["client"],
