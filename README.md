@@ -1,8 +1,10 @@
 # connection-plotter: examine pulsing patterns in transit systems
 
-Pulsar is a tool to look at [pulsing](http://www.humantransit.org/2010/12/basics-finding-your-pulse.html) in transit
+Connection-plotter is a tool to look at [pulsing](http://www.humantransit.org/2010/12/basics-finding-your-pulse.html) in transit
 systems by looking at connection time distributions. It uses [OpenTripPlanner](http://opentripplanner.org) to perform
 the graph theory tasks, and creates the distributions on the client side.
+
+A similar tool to look at aggregate distributions is [Pulsar](https://github.com/conveyal/pulsar).
 
 <img src="splash.png" alt="AM peak transfer times at Fullerton and Kimball, Chicago" />
 
